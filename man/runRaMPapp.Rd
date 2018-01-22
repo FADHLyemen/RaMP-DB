@@ -9,7 +9,11 @@ runRaMPapp(conpass = NULL, host = NULL)
 \arguments{
 \item{conpass}{password for database access (string)}
 
+<<<<<<< HEAD
 \item{host}{host name for database access (string)}
+=======
+\item{host}{host name for database access (default is "localhost")}
+>>>>>>> 6a0cc54e2d884369c857e49b1dc44decd89f2711
 }
 \description{
 This function launches the RShiny app.  It requires a connection to the RaMP database as input, which requires running the function connectoToRaMP() and providing the MySQL password.
