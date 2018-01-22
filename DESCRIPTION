@@ -20,4 +20,6 @@ Imports:
     dplyr,
     DT,
     xtable
+Depends:
+    magrittr
 RoxygenNote: 6.0.1.9000

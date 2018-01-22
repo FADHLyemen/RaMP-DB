@@ -223,7 +223,6 @@ rampGenerateBarPlot <- function(df){
 #' @param host host name for database access (default is "localhost")
 #' @param dbname name of the mysql database (default is "ramp")
 #' @param username username for database access (default is "root")
-#' @param host host name for database access (default is "localhost")
 #' @return a list contains all metabolits as name and pathway inside.
 #' @export
 rampFastPathFromMeta<- function(analytes,
