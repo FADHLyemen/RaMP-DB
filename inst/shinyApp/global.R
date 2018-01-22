@@ -1,5 +1,10 @@
 # The global variables that are important to keywords search and fisher test.
+.conpass <- .host <- .dbname <- .username<- con <- c()
 
+.GlobalEnv$.conpass <- "OsN3pkgin5RgMSXt3cL1"
+.GlobalEnv$.host <- "bmi-stashrdmz-vp01"
+.GlobalEnv$.username <- "RaMPappAdmin"
+.GlobalEnv$.dbname <- "RaMPapp"
 FisherTestData <- list(
   metabolites = read.csv("FisherTestDataMetabolites.csv"),
   genes = read.csv("FisherTestDataGenes.csv")

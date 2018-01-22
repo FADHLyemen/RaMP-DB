@@ -1,11 +1,11 @@
 dataInput_cata <- eventReactive(input$subText_cata,{
   progress <- shiny::Progress$new()
-  
+
   on.exit(progress$close())
-  
+
   progress$set(message = "Querying databases based on catalyzation ...", value = 0)
   progress$inc(0.3,detail = paste("Send Query ..."))
-  
+
   # rampOut <- rampCataOut(input$KW_cata, 99999)
   rampOut <- RaMP:::rampFastCata(input$KW_cata,conpass=.conpass,host = .host)
   progress$inc(0.7,detail = paste("Done!"))
@@ -60,22 +60,25 @@ detector_tab4 <- reactiveValues(num = NULL)
 
 observe({
   input$sub_mul_tab4
-  
+
   detector_tab4$num <- 1
 })
 
 data_mul_name_tab4 <- eventReactive(input$sub_mul_tab4,{
   RaMP:::rampFastCata(input$input_mul_tab4,conpass=.conpass,
-                      host = .host)
+                      host = .host,
+                      username = .username,
+                      dbname = .dbname)
 })
 data_mul_file_tab4 <- eventReactive(input$sub_file_tab4,{
   infile <- input$inp_file_tab4
   print(paste0("Input file is ",infile))
   if (is.null(infile))
     return(NULL)
-  
-  rampOut <- RaMP:::rampFileOfAnalytes_tab4(infile,conpass=.conpass,host = .host)
-  
+
+  rampOut <- RaMP:::rampFileOfAnalytes_tab4(infile,conpass=.conpass,host = .host,
+                                            username = .username,dbname = .dbname)
+
 })
 
 observe({
@@ -106,7 +109,7 @@ content = function(file) {
 output$preview_multi_names_tab4 <- DT::renderDataTable({
   if(is.null(detector_tab4$num))
     return("Waiting for input")
-  
+
   if(detector_tab4$num == 1){
     tb <- data_mul_name_tab4()
   } else if (detector_tab4$num == 2) {

@@ -10,7 +10,9 @@ dataInput_name <- eventReactive(input$submit_compName,{
   rampOut <- RaMP::rampFastPathFromMeta(analytes=input$KW_synonym,
                                         NameOrIds=input$NameOrId,
                                         conpass=.conpass,
-                                        host = .host)
+                                        host = .host,
+                                        username = .usrname,
+                                        dbname = .dbname)
   progress$inc(0.7,detail = paste("Done!"))
   return (rampOut)
 })
@@ -111,7 +113,9 @@ data_mul_name <- eventReactive(input$sub_mul_tab3,{
   RaMP::rampFastPathFromMeta(analytes=parsedinput,
                              NameOrIds=input$NameOrSourcemult,
                              conpass=.conpass,
-                             host = .host)
+                             host = .host,
+                             dbname = .dbname,
+                             username = .username)
 })
 
 
@@ -120,7 +124,12 @@ data_mul_file <- eventReactive(input$sub_file_tab3,{
   if (is.null(infile))
     return(NULL)
 
-  RaMP:::rampFileOfPathways(infile,conpass=.conpass,host = .host,NameOrIds=input$NameOrSourcemult)
+  RaMP:::rampFileOfPathways(infile,
+                            conpass=.conpass,
+                            host = .host,
+                            NameOrIds=input$NameOrSourcemult,
+                            username = .username,
+                            dbname = .dbname)
 })
 
 observe({
