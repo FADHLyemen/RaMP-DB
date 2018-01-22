@@ -65,7 +65,8 @@ observe({
 output$result3 <- DT::renderDataTable({
   out_stc <- dataInput_name()
   out_stc[,c("pathwayName","pathwaysourceId","pathwaysource")]
-})
+},
+rownames = FALSE)
 
 output$comp_report <- downloadHandler(filename = function() {
   paste0(input$KW_synonym, ".csv")
