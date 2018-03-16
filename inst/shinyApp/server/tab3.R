@@ -11,7 +11,7 @@ dataInput_name <- eventReactive(input$submit_compName,{
                                         NameOrIds=input$NameOrId,
                                         conpass=.conpass,
                                         host = .host,
-                                        username = .usrname,
+                                        username = .username,
                                         dbname = .dbname)
   progress$inc(0.7,detail = paste("Done!"))
   return (rampOut)

@@ -9,7 +9,7 @@ dataInput_path <- eventReactive(input$subText2,{
 
   rampOut <- RaMP::rampFastMetaFromPath(input$KW_path,conpass=.conpass,host = .host,
                                         dbname = .dbname,
-                                        username = .usrname)
+                                        username = .username)
   print(dim(rampOut))
   print(input$KW_path)
   print(input$geneOrComp2)
