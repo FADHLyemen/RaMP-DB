@@ -11,8 +11,8 @@ tabItem2<-  shinydashboard::tabItem(
                       status = "primary",
                       fluidRow(
                         column(12,
-                               helpText("Given pathway's name, it returns 
-                                        all of compounds' synonym contained in that pathway"),
+                               helpText("Given a pathway name, it returns 
+                                        all compounds contained in that pathway"),
                                textInput("singleInput2","",placeholder ="Input one pathway name"),
                                selectInput("KW_path", "Select from list", choices = NULL),
                                actionButton("subText2","Submit"),
@@ -52,7 +52,7 @@ tabItem2<-  shinydashboard::tabItem(
                     HTML("<div id='database-group-output'>"),
                     shinydashboard::box(
                       width = 12,
-                      status = "info",
+                      status = "primary",
                       solidHeader = T,
                       collapsible = T,
                       title = strong("Summary"),
@@ -64,9 +64,11 @@ tabItem2<-  shinydashboard::tabItem(
          shiny::tabPanel(title = "Input a list of pathways",
                   fluidRow(
                     shinydashboard::box(width = 6,
-                        title = strong("Input a list of pathways:"),
+			status="primary",
+			solidHeader = T,
+                        title = strong("Input a list of pathways, one per line:"),
                         textAreaInput("input_mul_tab2",label = "",
-                                      placeholder = "Input list of metabolites in lines or separated by \",\""),
+                                      placeholder = "Input list of pathways, one per line"),
                         actionButton("sub_mul_tab2",label = "Submit")
                     )
 #                    shinydashboard::box(
@@ -83,6 +85,8 @@ tabItem2<-  shinydashboard::tabItem(
                   fluidRow(
                     HTML("<div id='database-group-output'>"),
                     shinydashboard::box(width = 12,
+			status="primary",
+			solidHeader = T,
                         title = strong("Data preview"),
                         downloadButton("tab2_mul_report",label = "Download Table"),
                         hr(),

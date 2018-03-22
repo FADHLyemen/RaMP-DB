@@ -1,4 +1,4 @@
-# Function that runs rampFastMetaFromPath to return analytes from input pathway(s)
+# Function that runs getAnalyteFromPathway to return analytes from input pathway(s)
 dataInput_path <- eventReactive(input$subText2,{
   progress <- shiny::Progress$new()
 
@@ -13,6 +13,7 @@ dataInput_path <- eventReactive(input$subText2,{
   print(dim(rampOut))
   print(input$KW_path)
   print(input$geneOrComp2)
+  rampOut <- RaMP::getAnalyteFromPathway(input$KW_path,conpass=.conpass,host = .host)
   if(input$geneOrComp2 != "both"){
     rampOut <- rampOut[rampOut$geneOrCompound == input$geneOrComp2,]
   }
@@ -42,7 +43,7 @@ output$result <- DT::renderDataTable({
   out_src <- dataInput_path()
   if (is.null(out_src))
     return(NULL)
-  return(out_src)
+  return(out_src[colnames(out_src) != 'pathwayCategory'])
 },rownames = FALSE)
 
 
@@ -100,25 +101,19 @@ data_mul_file_tab2 <- eventReactive(input$sub_file_tab2,{
 
 observe({
   input$sub_file_tab2
-
   detector_tab2$num <- 2
+  RaMP::getAnalyteFromPathway(input$input_mul_tab2,conpass=.conpass,host = .host)
 })
-
 # Download table in a csv file.
 output$tab2_mul_report <- downloadHandler(filename = function(){
   if (detector_tab2$num == 1){
     paste0("pathwayOutput.csv")
-  } else if (detector_tab2$num == 2){
-    infile <- input$inp_file_tab2
-    paste0(infile[[1,'name']],"Output",".csv")
   }
 },
 content = function(file) {
   if (detector_tab2$num == 1){
     rampOut <- data_mul_name_tab2()
-  } else if (detector_tab2$num == 2){
-    rampOut <- data_mul_file_tab2()
-  }
+  } 
   write.csv(rampOut,file,row.names = FALSE)
 }
 )
@@ -126,10 +121,8 @@ content = function(file) {
 tb_data_tab2 <- reactive({
   if(detector_tab2$num == 1){
     tb <- data_mul_name_tab2()
-  } else if (detector_tab2$num == 2) {
-    tb <- data_mul_file_tab2()
-  }
-  tb
+  } 
+  tb[colnames(tb) != 'pathwayCategory']
 })
 output$preview_multi_names_tab2 <- DT::renderDataTable({
   if(is.null(detector_tab2$num))

@@ -7,7 +7,7 @@ dataInput_name <- eventReactive(input$submit_compName,{
   progress$set(message = "Querying databases to find pathways ...", value = 0)
   progress$inc(0.3,detail = paste("Send Query ..."))
 
-  rampOut <- RaMP::rampFastPathFromMeta(analytes=input$KW_synonym,
+  rampOut <- RaMP::getPathwayFromAnalyte(analytes=input$KW_synonym,
                                         NameOrIds=input$NameOrId,
                                         conpass=.conpass,
                                         host = .host,
@@ -76,41 +76,18 @@ output$comp_report <- downloadHandler(filename = function() {
 content = function(file) {
   rampOut <- dataInput_name()
   rampOut <- data.frame(rampOut)
-  write.csv(rampOut, file, row.names = FALSE, sep = ",")
+  write.csv(rampOut, file, row.names = FALSE)
 })
 
-#output$preview_tab3 <- renderUI({
-#  input$submit_compName
-
-#  isolate({
-#    if(input$synonymOrSource == "synonyms"){
-#      tables <- RaMP:::rampTablize(dataInput_name())
-#      return(div(HTML(unlist(tables)),class = "shiny-html-output"))
-#    } else {
-#      return(NULL)
-#    }
-#  })
-#})
-
-
+############
 # Second Tab
-#
-#
-rea_detector <- reactiveValues(num = NULL)
-
-observe({
-  input$sub_mul_tab3
-
-  rea_detector$num <- 1
-})
-
-
-# Batch Query
+#############
 data_mul_name <- eventReactive(input$sub_mul_tab3,{
-  print(input$input_mul_tab3)
+  #print(input$input_mul_tab3)
   parsedinput <- paste(strsplit(input$input_mul_tab3,"\n")[[1]])
   print(parsedinput)
-  RaMP::rampFastPathFromMeta(analytes=parsedinput,
+  if(length(parsedinput)==0) {metabsearch=NULL} else{
+  	metabsearch <- RaMP::getPathwayFromAnalyte(analytes=parsedinput,
                              NameOrIds=input$NameOrSourcemult,
                              conpass=.conpass,
                              host = .host,
@@ -134,29 +111,30 @@ data_mul_file <- eventReactive(input$sub_file_tab3,{
 
 observe({
   input$sub_file_tab3
+                             host = .host)
+	  print(input$input_mul_tab3_genes)
+  }
 
-  rea_detector$num <- 2
+  parsedinputg <- paste(strsplit(input$input_mul_tab3_genes,"\n")[[1]])
+  print(parsedinputg)
+  if(length(parsedinputg)==0) {genesearch=NULL} else{
+	  genesearch <- RaMP::getPathwayFromAnalyte(analytes=parsedinputg,
+                             NameOrIds=input$NameOrSourcemult_genes,
+                             conpass=.conpass,
+                             host = .host)
+  }
+  print(paste("metabsearch: ",ncol(metabsearch)))
+  print(paste("genesearch: ",ncol(genesearch)))
+  print(paste0("DIM of data_mul_name",nrow(rbind(metabsearch,genesearch))))
+  rbind(metabsearch,genesearch)
 })
 
 # Download table in a csv file.
 output$tab3_mul_report <- downloadHandler(filename = function(){
-  if (rea_detector$num == 1){
-    paste0("pathwayOutput.csv")
-  } else if (rea_detector$num == 2){
-    infile <- input$inp_file_tab3
-    paste0(infile[[1,'name']],"Output",".csv")
-  }
-},
-content = function(file) {
-  if (rea_detector$num == 1){
-    rampOut <- data_mul_name()[,c("pathwayName","pathwaysourceId",
-                                  "pathwaysource","commonName")]
-    #colnames(rampOut)[4] <- "Analyte"
-  } else if (rea_detector$num == 2){
-    rampOut <- data_mul_file()[,c("pathwayName","pathwaysourceId",
-                                  "pathwaysource","commonName")]
-    #colnames(rampOut)[4] <- "Analyte"
-  }
+      paste0("pathwayFromMetabolitesOutput.csv")
+}, content = function(file) {
+      rampOut <- data_mul_name()[,c("pathwayName","pathwaysourceId",
+                                    "pathwaysource","commonName")]
   write.csv(rampOut,file,row.names = FALSE)
 }
 )
@@ -164,90 +142,40 @@ content = function(file) {
 output$summary_mulpath_out<- DT::renderDataTable({
   if(is.null(data_mul_name())) {
     out <- data.frame(Query=NA,Freq=NA)
-  }
-  else {
-    temp <- data_mul_name()
+  } else {
+      temp <- data_mul_name()
+    }
     out <- as.data.frame(table(temp$commonName))
-    colnames(out)[1] <- "Query"
-  }
+    colnames(out) <- c("Query","Num_Pathways")
   out
 },rownames=FALSE)
 
 output$preview_multi_names <- DT::renderDataTable({
-  if(is.null(rea_detector$num))
-    return("Waiting for input")
+  if(is.null(data_mul_name())) {
+    return("No input found")
+  } else {
 
-  if(rea_detector$num == 1){
     tb <- data_mul_name()[,c("pathwayName","pathwaysourceId",
                              "pathwaysource","commonName")]
-  } else if (rea_detector$num == 2) {
-    tb <- data_mul_file()[,c("pathwayName","pathwaysourceId",
-                             "pathwaysource","commonName")]
-  }
-  #colnames(tb)[4]="Analyte"
-  tb
+  return(tb)
+ }
 }
 ,rownames = FALSE)
 
 
-#fisher_result_bar <- eventReactive(input$runFisher,{
-#  if(rea_detector$num == 1){
-#    RaMP:::runFisherTest(meta_path_list(),input$analyte_type,
-#	total_metabolites=input$total_metabolites, total_genes=input$total_genes,
-#	conpass=.conpass)
-#  } else if (rea_detector$num == 2){
-#    RaMP:::runFisherTest(meta_path_list(),input$analyte_type,
-#	total_metabolites=input$total_metabolites, total_genes=input$total_genes,
-#	conpass=.conpass)
-#  } else {
-#    return("No Input")
-#  }
-#})
-
-#fisher_result_tab3 <- reactive({
-#  if (is.null(rea_detector$num)){
-#    return()
-#  }
-#  if (rea_detector$num == 1){
-#    RaMP:::rampFisherTest(meta_path_list(),analyte_type=
-#length(unique(data_mul_name()$metabolite)),
-#	conpass=.conpass)
-#  } else if (rea_detector$num == 2){
-#    RaMP:::rampFisherTest(meta_path_list(),length(unique(data_mul_file()$metabolite)),
-#	conpass=.conpass)
-#  }
-#})
-#output$stats_fisher_tab3 <- renderTable({
-#  if (is.null(input$hcClicked))
-#    return("Click plots for fisher test...")
-
-# stats <- fisher_result_tab3()
-#
-# display <- data.frame("Stats result" = c(stats[[input$hcClicked$name]]$p.value,
-#                                                stats[[input$hcClicked$name]]$method))
-#  stats <- fisher_result_bar()
-#  display <- data.frame("Stats Result" = c(paste0("p-value:",stats$p.value),
-#                                           paste0("Method: Fisher Exact Test")))
-#  return(display)
-#},
-#rownames =F,
-#striped = T)
-
-
 fisherTestResult <- eventReactive(input$runFisher,{
-  print("Generating fisher test result...")
-  out <- RaMP::runFisherTest(req(data_mul_name()),analyte_type=input$analyte_type,
-                             conpass=.conpass)
-  print("Results generated")
-  print(paste0("Fisher results size:",nrow(out)))
+
+    out <- RaMP::runCombinedFisherTest(req(data_mul_name()),
+                               conpass=.conpass)
+    print("Results generated")
+    print(paste0("Fisher results size:",nrow(out[[1]])))
   out
 })
-
 
 output$summary_fisher <- DT::renderDataTable({
   if(!is.null(fisherTestResult())) {
     data <- fisherTestResult()
-    out=as.data.frame(table(data$pathwaysource))
+    out=as.data.frame(table(data$fishresults$pathwaysource))
     colnames(out)[1]="Pathway_Source"
   } else {
     out <- data.frame(Pathway_Source=NA, Freq=NA)
@@ -255,284 +183,221 @@ output$summary_fisher <- DT::renderDataTable({
   out
 },rownames=FALSE,filter="top")
 
-fisherTestResultSignificant<-eventReactive(input$runFisher,{
-  result<-FilterFishersResults(fisherTestResult(),p_fdradj_cutoff=as.numeric(input$p_fdradj_cutoff))
-  print(paste0(nrow(result)," significant pathways identified"))
-  result
+
+output$num_mapped_namesids <- renderText({
+	  data <- data_mul_name()
+	  inputlist <- input$input_mul_tab3
+	  inputlist2 <-input$input_mul_tab3_genes
+	  inputsize=0
+	  if(!is.null(inputlist) && !is.null(inputlist2)) {
+	  	#inputsize <- length(inputlist)+length(inputlist2)
+		inputsize <- length(strsplit(inputlist,"\n")[[1]])+length(strsplit(inputlist2,"\n")[[1]])
+	  } else if (!is.null(inputlist) && is.null(inputlist2)) {
+		#inputsize <- length(inputlist)
+		inputsize <- length(strsplit(inputlist,"\n")[[1]])
+          } else if (is.null(inputlist) && !is.null(inputlist2)) {
+		#inputsize <- length(inputlist2)
+		inputsize <- length(strsplit(inputlist2,"\n")[[1]])
+	  }
+	if(!is.null(data) && inputsize>0) {
+		print(paste0("Found ",length(unique(data$commonName))," out of ",
+		inputsize))
+	}
 })
 
-cluster_output<-eventReactive(input$runFisher,{
+output$fishersProgress<-renderText(
+  if(!is.null(fisherTestResult())){
+    print("Hit 'Filter and Cluster Results' to view below and download")
+  }
+)
+
+fisherTestResultSignificant<-eventReactive(input$runClustering,{
+  if(!is.null(fisherTestResult())){
+    result<-RaMP::FilterFishersResults(fisherTestResult(),p_holmadj_cutoff=as.numeric(input$p_holmadj_cutoff))
+    return(result)
+  }else{
+    return(NULL)
+  }
+})
+
+cluster_output<-eventReactive(c(input$runFisher,input$runClustering),{
   data <- fisherTestResultSignificant()
-  out<-RaMP::find_clusters(data,input$analyte_type, as.numeric(input$perc_analyte_overlap), as.numeric(input$min_pathway_tocluster),
-                      as.numeric(input$perc_pathway_overlap),p_cutoff = as.numeric(input$p_fdradj_cutoff))
-  if(length(unique(out))>1){
-    print(paste0(length(out)," clusters found"))
+  out<-RaMP::findCluster(fishers_df=data,perc_analyte_overlap=as.numeric(input$perc_analyte_overlap),
+	min_pathway_tocluster=as.numeric(input$min_pathway_tocluster),
+                      perc_pathway_overlap=as.numeric(input$perc_pathway_overlap))
+  cluster_list<-out$cluster_list
+  if(length(unique(cluster_list))>1){
+    print(paste0(length(cluster_list)," clusters found"))
   }else{
     print("Clustering failed")
   }
-  out
+  return(out)
+})
+
+cluster_list<-reactive({
+  out<-cluster_output()
+  if(!is.null(out)){
+    cluster_list<-out$cluster_list
+  } else {
+    return('Nothing found based on given filters.')
+  }
 })
 
 output$cluster_summary_text<-renderText(
+  #out<-cluster_output()
   if(as.numeric(input$perc_analyte_overlap) <= 0 || as.numeric(input$perc_analyte_overlap) >= 1 || as.numeric(input$perc_pathway_overlap) <= 0 || as.numeric(input$perc_pathway_overlap) >= 1){
    print("Clustering warning: overlap thresholds must be a percentage greater than 0 and less than 1!")
   }else if(!is.null(cluster_output())){
-    if(length(unique(cluster_output()))>1){
-    paste0("Fuzzy clustering identified ",length(cluster_output()), " distinct cluster(s) of pathways")
+    #cluster_list<-out$cluster_list
+    if(length(unique(cluster_list()))>1){
+    paste0("Fuzzy clustering identified ",length(cluster_list()), " distinct cluster(s) of pathways")
     }else{
       print("Fuzzy clustering algorithm did not identify any clusters. Less stringent thresholds may help in identification, or there may not be enough pathways to cluster.")
     }
   }
 )
 
-output$cluster_summary_plot<-renderPlot(
-  if(!is.null(cluster_output())&&length(unique(cluster_output()))>1){
-    data<-as.numeric(lapply(cluster_output(),length))
+output$cluster_summary_plot<-renderPlot({
+  out<-cluster_output()
+  if(!is.null(out)&&length(unique(cluster_list()))>1){
+    data<-as.numeric(lapply(cluster_list(),length))
     ylim<-c(0, 1.1*max(data))
     xx<- barplot(data, xaxt = 'n', xlab = '', width = 0.85, ylim = ylim, yaxt = 'n',
                  col = "steelblue")
     text(x = xx, y = data, label = data, pos = 3, cex = 0.8)
-    axis(1, at=xx, labels=c(1:length(cluster_output())))
+    axis(1, at=xx, labels=c(1:length(cluster_list())))
     #axis(4, at=c(1,round(max(data)/2),max(data)))
     title("Pathways per cluster", xlab="Cluster #")
     #mtext("# Pathways", side=4, line=-1.5)
   }
-)
-
-observe({
-  updateSelectInput(session,"show_cluster","Display pathways in cluster:",
-                    #choices = as.vector(na.exclude(c("All",ifelse(length(unique(cluster_output()))>1,1:length(cluster_output()),NA),"Did not cluster"),selected = "All")))
-                    #choices = c("All",1:length(cluster_output()),"Did not cluster"),selected = "All")
-                    choices = as.vector(na.exclude(c("All",ifelse(unique(cluster_output())!="Did not cluster",1:length(cluster_output()),NA),"Did not cluster"),selected = "All")))
 })
 
-total_results_fisher <- eventReactive(input$runFisher,{
+observe({
+  out<-cluster_output()
+  cluster_list<-out$cluster_list
+  updateSelectInput(session,"show_cluster","Display pathways in cluster:",
+                    choices = as.vector(na.exclude(c("All",ifelse(unique(cluster_list())!="Did not cluster",
+			1:length(cluster_list()),NA),"Did not cluster"),selected = "All")))
+})
+
+results_fisher_clust <- reactive({
+  cluster_out<-cluster_output()
   if(is.null(fisherTestResult())) {
     data <- data.frame(Query=NA,Freq=NA)
+  }else{
+    data <- fisherTestResultSignificant()
   }
-  data <- fisherTestResultSignificant()
-  # Need to remove RaMPID column
-  rampids<-data[,9]
-  data<-data[,-9]
-
-  cluster_list<-cluster_output()
-  if(length(cluster_list)>1){
-    cluster_assignment<-sapply(rampids,function(x){
-      pathway<-x
-      clusters<-""
-      for(i in 1:length(cluster_list)){
-        if(pathway %in% cluster_list[[i]]){
-          clusters<-paste0(clusters,i,sep = ", ",collapse = ", ")
-        }
-      }
-      if(clusters!=""){
-        #&&length(unique(clusters))>1
-        clusters=substr(clusters,1,nchar(clusters)-2)
-      }else{
-        clusters = "Did not cluster"
-      }
-      return(clusters)
-    })
-    data_2<-cbind(data,cluster_assignment)
-  } else{
-    data_2<-cbind(data,rep("Did not cluster",times=nrow(data)))
+  if(is.null(cluster_out)){
+    return(data)
+  }else{
+    return(cluster_out)
+    # # Need to remove RaMPID column
+    # fisher_df<-data[[1]]
+    # rampids<-fisher_df$pathwayRampId
+    # fisher_df$pathwayRampId<-NULL
+    #
+    # if(length(cluster_list)>1){
+    #   cluster_assignment<-sapply(rampids,function(x){
+    #     pathway<-x
+    #     clusters<-""
+    #     for(i in 1:length(cluster_list)){
+    #       if(pathway %in% cluster_list[[i]]){
+    #         clusters<-paste0(clusters,i,sep = ", ",collapse = ", ")
+    #       }
+    #     }
+    #     if(clusters!=""){
+    #       clusters=substr(clusters,1,nchar(clusters)-2)
+    #     }else{
+    #       clusters = "Did not cluster"
+    #     }
+    #     return(clusters)
+    #   })
+    #   data[[1]]<-cbind(fisher_df,cluster_assignment)
+    # }else{
+    #   data[[1]]<-cbind(fisher_df,rep("Did not cluster",times=nrow(fisher_df)))
+    # }
+    # #data$Pval <- round(data$Pval,8)
+    # #data$Adjusted.Pval <- round(data$Adjusted.Pval,8)
+    # #colnames(data_2)<-c("Pathway Name", "Raw Fisher's P Value","FDR Adjusted P Value","Holm Adjusted P Value",
+    # #"Source ID","Source DB", "User Analytes in Pathway", "Total Analytes in Pathway", "In Cluster")
+    # data[[1]]$rampids<-rampids
+    # return(data)
   }
-  #data$Pval <- round(data$Pval,8)
-  #data$Adjusted.Pval <- round(data$Adjusted.Pval,8)
-  colnames(data_2)<-c("Pathway Name", "Raw Fisher's P Value","FDR Adjusted P Value","Holm Adjusted P Value",
-                      "Source ID","Source DB", "User Analytes in Pathway", "Total Analytes in Pathway", "In Cluster")
-  data_2<-cbind(data_2,rampids)
 })
 
 output$results_fisher <- DT::renderDataTable({
-  if(!is.null(total_results_fisher)){
-  results_fisher<-total_results_fisher()
-  cluster_output<-cluster_output()
-  if(input$show_cluster=="All"){
-    results_fisher[,-10]
-  }else if(input$show_cluster=="Did not cluster"){
-    results_fisher[which(results_fisher[,9]=="Did not cluster"),-10]
+  results_fisher_total<-results_fisher_clust()
+  results_fisher<-results_fisher_total$fishresults
+  if(nrow(results_fisher)==0){
+    #return(data.frame(rep(NA, times = 9)))
+    stop("No significant pathways identified. Your input analytes may be too small (e.g. number of analytes in each pathway is < 2)")
   }else{
-    results_fisher[which(results_fisher[,10] %in% cluster_output[[as.numeric(input$show_cluster)]]),-10]
-  }
-  }else{
-    data.frame(rep(NA, times = 9))
+    if(results_fisher_total$analyte_type=="both"){
+      results_fisher<-results_fisher[,c("pathwayName","Num_In_Path.Metab","Total_In_Path.Metab",
+                                        "Num_In_Path.Gene","Total_In_Path.Gene", "Pval_combined",
+                                        "Pval_combined_FDR","Pval_combined_Holm","pathwaysourceId","pathwaysource",
+                                        "cluster_assignment","rampids")]
+      # Filtered:
+      #"Pval.Metab","Pval.Gene",
+
+      colnames(results_fisher)<-c("Pathway Name", "User Metabolites in Pathway",
+                                  "Total Metabolites in Pathway","User Genes in Pathway",
+                                  "Total Genes in Pathway","Raw Fisher's P Value (Combined)","FDR Adjusted P Value (Combined)",
+                                  "Holm Adjusted P Value (Combined)","Source ID","Source DB","In Cluster","rampids")
+      # Filtered:
+      # "Raw Fisher's P Value (Metabolites)","Raw Fisher's P Value (Genes)",
+    }else{
+      #print(colnames(results_fisher))
+      results_fisher<-results_fisher[,c("pathwayName","Pval","Pval_FDR","Pval_Holm","pathwaysourceId","pathwaysource",
+                                        "Num_In_Path","Total_In_Path","cluster_assignment","rampids")]
+      colnames(results_fisher)<-c("Pathway Name", "Raw Fisher's P Value","FDR Adjusted P Value","Holm Adjusted P Value",
+                                  "Source ID","Source DB", "User Analytes in Pathway", "Total Analytes in Pathway",
+                                  "In Cluster","rampids")
+    }
+    rampids <- results_fisher$rampids
+    rampids <- rampids[order(results_fisher[,"In Cluster"])]
+    results_fisher$rampids <- NULL
+    results_fisher <- results_fisher[order(results_fisher[,"In Cluster"]),]
+    cluster_output<-cluster_list()
+    if(input$show_cluster=="All"){
+      results_fisher
+    }else if(input$show_cluster=="Did not cluster"){
+      results_fisher[which(results_fisher[,"In Cluster"]=="Did not cluster"),]
+    }else{
+      results_fisher[which(rampids %in% cluster_output[[as.numeric(input$show_cluster)]]),]
+    }
   }
 },rownames = FALSE,filter = "top")
 
 output$fisher_stats_report <- downloadHandler(filename = function(){
   return("fisherText.csv")
 },content = function(file){
-  #print("Fisher Stats Output has some problems ...")
-  rampOut <- total_results_fisher()
-  cluster_output <- cluster_output()
-  if(!is.null(rampOut)&&length(unique(cluster_output))>1) {
-    cluster_assignment<-apply(rampOut,1,function(x){
-      pathway<-x[10]
-      clusters<-c()
-      for(i in 1:length(cluster_output)){
-        if(pathway %in% cluster_output[[i]]){
-          clusters<-c(clusters,i)
-        }
-      }
-      return(clusters)
-    })
-    rampOut<-rampOut[,-10]
-    rampOut[,9] <- rep(NA,times = nrow(rampOut))
-    colnames(rampOut)[9]<-"In Cluster"
-    duplicate_rows<-c()
-    for(i in 1:nrow(rampOut)){
-      if(is.null(cluster_assignment[[i]])){
-        rampOut[i,9]="Did not cluster"
-      } else if(length(cluster_assignment[[i]])>1){
-        duplicate_rows<-c(duplicate_rows,i)
-        for(j in cluster_assignment[[i]]){
-          new_row<-c(rampOut[i,1:8],j)
-          names(new_row)<-colnames(rampOut)
-          rampOut<-rbind(rampOut,new_row)
-        }
-      }else{
-        rampOut[i,9]=cluster_assignment[[i]]
-      }
+  out <- results_fisher_clust()
+  rampOut <- out$fishresults
+  cluster_output <- cluster_list()
+  if(!is.null(rampOut)) {
+    if(out$analyte_type=="both"){
+      rampOut<-rampOut[,c("pathwayName","Pval.Metab","Num_In_Path.Metab","Total_In_Path.Metab",
+                                        "Pval.Gene", "Num_In_Path.Gene","Total_In_Path.Gene", "Pval_combined",
+                                        "Pval_combined_FDR","Pval_combined_Holm","pathwaysourceId","pathwaysource",
+                                        "cluster_assignment","rampids")]
+
+      colnames(rampOut)<-c("Pathway Name", "Raw Fisher's P Value (Metabolites)","User Metabolites in Pathway",
+                                  "Total Metabolites in Pathway","Raw Fisher's P Value (Genes)","User Genes in Pathway",
+                                  "Total Genes in Pathway","Raw Fisher's P Value (Combined)","FDR Adjusted P Value (Combined)",
+                                  "Holm Adjusted P Value (Combined)","Source ID","Source DB","In Cluster","rampids")
+      rampOut<-rampOut[order(rampOut[,"Holm Adjusted P Value (Combined)"]),]
+    }else{
+      results_fisher<-rampOut[,c("pathwayName","Pval","Pval_FDR","Pval_Holm","pathwaysourceId","pathwaysource",
+                                        "Num_In_Path","Total_In_Path","cluster_assignment","rampids")]
+      colnames(rampOut)<-c("Pathway Name", "Raw Fisher's P Value","FDR Adjusted P Value","Holm Adjusted P Value",
+                                  "Source ID","Source DB", "User Analytes in Pathway", "Total Analytes in Pathway",
+                                  "In Cluster","rampids")
+      rampOut<-rampOut[order(rampOut[,"Holm Adjusted P Value"]),]
     }
-    rampOut<-rampOut[-duplicate_rows,]
-    rampOut <- do.call(cbind,rampOut)
-  }else{
-    rampOut<-rampOut[,-10]
-  }
-  if(!is.null(rampOut)){
-    rampOut<-rampOut[order(rampOut[,"Source DB"]),]
   write.csv(rampOut,file,row.names = FALSE)
   }else{
     write.csv(c("No significant results"),file,row.names = FALSE)
   }
 })
 
-
-
-#fisherHeatMap <- reactive({
-#  print("Generate data for heatmap ...")
-#  fisher <- fisherTestResult()
-#  if (is.null(fisher))
-#    return()
-#  hc_data <- data.frame(y = NULL, pathway = NULL)
-#
-#  for (pathway in names(fisher)){
-#    if(fisher[[pathway]]$p.value < as.numeric(input$pvalue_fisher)){
-#      print("pathway:")
-#      print(pathway)
-#      hc_data <- rbind(hc_data,
-#                       data.frame(y = fisher[[pathway]]$p.value,
-#                                          pathway = pathway))
-#    }
-#  }
-#  return(hc_data)
-#})
-
-
-
-#output$heatmap_pvalue <- highcharter::renderHighchart({
-#  data <- fisherHeatMap()
-#  data <- data[order(data$y),]
-#  pathway <- as.vector(data$pathway)
-#  pvalue <- data$y
-#  heatmap_data <- data.frame(v1 = rep(1,length(pathway)),v2 = 1:length(pathway))
-#  heatmap_data$value <- pvalue
-#  heatmap_data <- list_parse2(heatmap_data)
-#
-#  fntltp <- highcharter::JS(
-#    "function(){
-#    return this.series.yAxis.categories[this.point.y] + ' p='+this.point.value;
-#  }")
-#  hc <- highcharter::highchart() %>%
-#    highcharter::hc_chart(type = "heatmap",
-#             borderColor = '#ceddff',
-#             borderRadius = 10,
-#             borderWidth = 2,
-#             zoomType = "y",
-#             backgroundColor = list(
-#               linearGradient = c(0, 0, 500, 500),
-#               stops = list(
-#                 list(0, 'rgb(255, 255, 255)'),
-#                 list(1, 'rgb(219, 228, 252)')
-#               ))) %>%
-#    hc_title(text = "P-value for Fisher Exact Test") %>%
-#    hc_xAxis(categories = c(".",
-#                            enable = FALSE),
-#             visible = FALSE) %>%
-#    hc_yAxis(categories = c("",pathway),
-#             visible = TRUE) %>%
-#    hc_add_series(name = "pvalue",data = heatmap_data) %>%
-#    hc_tooltip(formatter = fntltp, valueDecimals = 2) %>%
-#    hc_exporting(enabled = TRUE)
-#
-#  hc_colorAxis(hc,minColor ="#FFFFFF", maxColor = "#F44242")
-#
-#})
-
-# Format data from querying database and provide appropriate layout to generate
-# bar plot for highcharter.
-#meta_path_list <- reactive({
-#  if(rea_detector$num == 1){
-#      bar_plot_info <-
-#        RaMP:::rampGenerateBarPlot(data_mul_name()[,c("pathwayName",
-#                "pathwaysourceId","pathwaysource","rampId")])
-#  } else if (rea_detector$num == 2){
-#      bar_plot_info <-
-#        RaMP:::rampGenerateBarPlot(data_mul_file()[,c("pathwayName",
-#                "pathwaysourceId","pathwaysource","rampId")])
-#  }
-#  bar_plot_info <- bar_plot_info[order(sapply(bar_plot_info,nrow),decreasing =TRUE)]
-#})
-
-# highchart
-# order data in decreasing...
-# 12/12 change it to display the log(p) value of each pathways.
-#output$tab3_hc_output <- highcharter::renderHighchart({
-#  if (is.null(rea_detector$num) && is.null(input$inp_file_tab3))
-#    return()
-#
-#  hc_data <- meta_path_list()
-#
-#  myClickFunc <- highcharter::JS("function(event) {Shiny.onInputChange('hcClicked',event.point.category);}")
-#  freq <- lapply(hc_data,nrow)
-#  x_data <- names(freq)
-#  detail <- sapply(hc_data,as.vector)
-#  detail <- lapply(detail,paste,collapse = " ")
-#  names(detail) <- NULL
-#
-#  names(freq) <- NULL
-#  y_data <- data.frame(y = unlist(freq),detail = unlist(detail))
-#  hc <- RaMP:::rampHcOutput(x_data,y_data,"column",myClickFunc)
-#  return(hc)
-#})
-
-## interactive plot displays information of a bar.
-#detail_of_bar <- reactive({
-#  if (is.null(input$runFisher))
-#    return(NULL)
-#  output <- meta_path_list()
-#  string <- paste(output[[input$hcClicked$name]][[1]],collapse = ' ')
-#  output <- paste0("The pathway ",input$hcClicked$name," has ",
-#                   length(output[[input$hcClicked$name]][[1]])," metabolites:",string)
-#  output <- paste0("Total ",length(unique(names(meta_path_list())))," pathways.",output)
-#  return(output)
-#})
-
-#output$summary_Fisher <- renderText({
-#  detail_of_bar()
-#})
-
-#fisher_result_bar <- eventReactive(input$runFisher,{
-#  if(rea_detector$num == 1){
-#    RaMP:::runFisherTest(meta_path_list(),input$analyte_type,
-#       total_metabolites=input$total_metabolites, total_genes=input$total_genes,
-#       conpass=.conpass)
-#  } else if (rea_detector$num == 2){
-#    RaMP:::runFisherTest(meta_path_list(),input$analyte_type,
-#       total_metabolites=input$total_metabolites, total_genes=input$total_genes,
-#       conpass=.conpass)
-#  } else {
-#    return("No Input")
-#  }
-#})

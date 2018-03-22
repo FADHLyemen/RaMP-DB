@@ -3,7 +3,7 @@
 
 # RaMP - Relational Database of Metabolomic Pathways
 
-The purpose of RaMP is to provide a publicly available database that integrates metabolite and gene biological pathways from multiple sources. Currently, we have integrated information from HMDB, KEGG, Reactome, and WikiPathways. The relational structure of RaMP enables complex and batch queries.  To facilitate its usage, we have created this R shiny web application that includes a user-friendly R Shiny web application.  Please note that this project is in continuous development and we certainly appreciate your feedback (through [our](https://github.com/Mathelab/RaMP-DB) GitHub site). 
+The purpose of RaMP is to provide a publicly available database that integrates metabolite and gene biological pathways from multiple sources. Currently, we have integrated information from HMDB, KEGG, Reactome, and WikiPathways. The relational structure of RaMP enables complex and batch queries.  To facilitate its usage, we have created this R shiny web application that includes a user-friendly R Shiny web application.  Please note that this project is in continuous development and we certainly appreciate your feedback (through [our](https://github.com/Mathelab/RaMP-DB) GitHub site). More details can be found in <a href="http://www.mdpi.com/2218-1989/8/1/16" target="_blank">our manuscript</a>.
 
 Also note that we are working on a server version of RaMP so that users do not have to install anything on their local machines.  Stay tuned!
 
@@ -75,13 +75,16 @@ install_github("mathelab/RAMP-DB")
 # Load the package
 library(RaMP)
 ```
-
 Now, you're set to use the web application locally.  Just type:
 ```R
 RaMP::runRaMPapp(conpass="mysql_password")
 ```
 
 If the username is different then root, then specify the username in the "username" parameter.  Similarly, if the name of the database is different than "ramp", then specify the "dbname" parameter.
+
+### Note
+
+If you reinstall the latest version of the RaMP package, be sure to also install the latest version of the mysql RaMP dump file.  
 
 ## Reporting Issues
 If you encounter any problems, or find installation problems or bugs, please start an issue on the Issues tab or email Ewy.Mathe@osumc.edu directly. Thanks!
