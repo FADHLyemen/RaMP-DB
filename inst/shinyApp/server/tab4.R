@@ -75,7 +75,6 @@ data_mul_name_tab4 <- eventReactive(input$sub_mul_tab4,{
                       host = .host,
                       username = .username,
                       dbname = .dbname)
-                      NameOrIds = input$input_mul_tab4_choices)
 })
 data_mul_file_tab4 <- eventReactive(input$sub_file_tab4,{
   infile <- input$inp_file_tab4
@@ -139,5 +138,4 @@ output$preview_multi_names_tab4 <- DT::renderDataTable({
         }
 
 })
-
 

@@ -13,7 +13,6 @@ dataInput_path <- eventReactive(input$subText2,{
   print(dim(rampOut))
   print(input$KW_path)
   print(input$geneOrComp2)
-  rampOut <- RaMP::getAnalyteFromPathway(input$KW_path,conpass=.conpass,host = .host)
   if(input$geneOrComp2 != "both"){
     rampOut <- rampOut[rampOut$geneOrCompound == input$geneOrComp2,]
   }
@@ -102,7 +101,6 @@ data_mul_file_tab2 <- eventReactive(input$sub_file_tab2,{
 observe({
   input$sub_file_tab2
   detector_tab2$num <- 2
-  RaMP::getAnalyteFromPathway(input$input_mul_tab2,conpass=.conpass,host = .host)
 })
 # Download table in a csv file.
 output$tab2_mul_report <- downloadHandler(filename = function(){

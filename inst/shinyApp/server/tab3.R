@@ -111,10 +111,6 @@ data_mul_file <- eventReactive(input$sub_file_tab3,{
 
 observe({
   input$sub_file_tab3
-                             host = .host)
-	  print(input$input_mul_tab3_genes)
-  }
-
   parsedinputg <- paste(strsplit(input$input_mul_tab3_genes,"\n")[[1]])
   print(parsedinputg)
   if(length(parsedinputg)==0) {genesearch=NULL} else{
