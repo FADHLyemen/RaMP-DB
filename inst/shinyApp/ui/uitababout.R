@@ -2,21 +2,18 @@ tabItem_about <- shinydashboard::tabItem(
   tabName = "About",
   shinydashboard::box(width = 12,
       title = tags$h1(strong("RaMP: Relational Database of Metabolic Pathways")),
-      footer = p(strong("Contact: Bofei Zhang zhang.5675@osu.edu")),
+      footer = p("For questions or issues, please submit an issue on our GitHub site at https://github.com/Mathelab/RaMP-DB"),
       solidHeader = T,
       div(
         style ="margin:25px;",
-        hr(),
-        p("For usage of this software, you must have RaMP databases imported on
-          your local computer. For importing database, you should refer to the 
-          repository ",
+        p("To use this software on your local machine, you must have the RaMP SQL database installed locally.  For instructions on how to do so, please refer to the RaMP-DB GitHub repository ",
           tags$a(
-            href = "https://bitbucket.org/baskine/mathelabramp",
+            href = "https://github.com/Mathelab/RaMP-DB",
             rel="noopener noreferrer",
             target = "_blank",
-            "mathelabramp"
-          ), " to build local RaMP databases."),
-        p(" RaMP is a conglomerate of 4 different databases:"),
+            "RaMP-DB GitHub repository"
+          ), "."),
+        p(" RaMP currently integrates information from 4 different databases:"),
         tags$ul(
           id = "tab1link",
           tags$li(tags$a(href = "http://www.genome.jp/kegg/",
@@ -36,9 +33,7 @@ tabItem_about <- shinydashboard::tabItem(
                          target = "_blank",
                          "wikipathways"))
         ),
-        p("RaMP pulls together information from the imported databases 
-          -- mainly compounds, genes, pathways, and ontology. The relationship between 
-          metabolites, pathways and ontology are connected by their internal RaMP ID. 
+        p("Of note, RaMP does not import all the information contained in these databases.  Instead, RaMP includes pathway names and the genes and metabolites they include.  RaMP is a work in progress and we will be expanding its content (reaction-level information, non-human compounds and genes, etc.).
           Currently, the following queries are supported through this interface: "),
         tags$ul(
           id = "ramp-function",
@@ -47,12 +42,14 @@ tabItem_about <- shinydashboard::tabItem(
           tags$li("Tab2: Given a list of metabolite(s) or gene(s), retrieve all pathways
 		that they are involved in. This tab also support pathway 
 		overrepresentation analysis"),
-          tags$li("Tab3: Given one of multiple metabolite(s) or gene(s), retrieve all 
-		gene(s) or metabolite(s), respectively, that are involved in the sam
-		reaction")
+          tags$li("Tab3: Given one or multiple metabolite(s) or gene(s), retrieve all 
+		gene(s) or metabolite(s), respectively, that are involved in the same
+		reaction. A network of gene-metabolite relationships can be drawn."),
+	  tags$li("Tab4: Given one or multiple metabolite(s), retrieve the ontology
+		(e.g. biofluid location, cellular location, etc.) they belong in.")
           ),
-        p("Based on content of RaMP databases, the overlap under specific condition could be determined 
-          and shown in Venn Diagram."),
+	HTML("<p>More details can be found in <a href='http://www.mdpi.com/2218-1989/8/1/16' target='_blank'>our manuscript</a></p>"),
+        p("The Venn diagram below shows the overlap in metabolites and genes from each database source (as of 01/24/2017). "), 
         HTML(
           "
           <div id = 'figure-container' >

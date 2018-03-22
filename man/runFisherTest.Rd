@@ -6,20 +6,17 @@
 clicked on highchart}
 \usage{
 runFisherTest(pathwaydf, total_metabolites = NULL, total_genes = 20000,
-  analyte_type = "metabolites", min_analyte = 2, conpass = NULL,
-  dbname = "ramp", username = "root", host = "localhost")
+  analyte_type = "metabolites", conpass = NULL, dbname = "ramp",
+  username = "root", host = "localhost")
 }
 \arguments{
-\item{pathwaydf}{a data frame resulting from rampFastPathFromMeta}
+\item{pathwaydf}{a data frame resulting from getPathwayFromAnalyte}
 
 \item{total_metabolites}{number of metabolites analyzed in the experiment (e.g. background) (default is 1000; set to 'NULL' to retrieve total number of metabolites that map to any pathway in RaMP). Assumption that analyte_type is "metabolite")}
 
 \item{total_genes}{number of genes analyzed in the experiment (e.g. background) (default is 20000, with assumption that analyte_type is "genes")}
 
 \item{analyte_type}{"metabolites" or "genes" (default is "metabolites")}
-
-\item{min_analyte}{if the number of analytes (gene or metabolite) in a pathway is
-< min_analyte, do not report}
 
 \item{conpass}{password for database access (string)}
 
@@ -30,7 +27,7 @@ runFisherTest(pathwaydf, total_metabolites = NULL, total_genes = 20000,
 \item{host}{host name for database access (default is "localhost")}
 }
 \value{
-a dataframe with pathway enrichment (based on Fisher's test) results
+a dataframe with columns containing pathway ID, fisher's p value, user analytes in pathway, and total analytes in pathway
 }
 \description{
 Do fisher test for only one pathway from search result

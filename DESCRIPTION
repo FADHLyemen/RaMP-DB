@@ -9,8 +9,7 @@ Authors@R: c(
     person("Bofei", "Zhang", email = "zhang.5675@osu.edu", role = "aut"),
     person("Andrew","Patt",email = "andrew.patt@osumc.edu",role = "aut"),
     person("Ewy", "Mathe", email = "Ewy.Mathe@osumc.edu", role = c("aut", "cre")))
-Description: RaMP integrates 4 different databases (KEGG, Reactome,
-    HMDB, and WikiPathways), and provides comprehensive pathway annotations and queries for compounds (metabolites), genes, and pathways.
+Description: RaMP integrates 4 different databases (KEGG, Reactome, HMDB, and WikiPathways), and provides comprehensive pathway annotations and queries for compounds (metabolites), genes, and pathways.
 Imports:
     RMySQL,
     magrittr,
@@ -23,4 +22,3 @@ Imports:
     xtable,
     visNetwork
 RoxygenNote: 6.0.1.9000
-~
