@@ -19,12 +19,6 @@ Imports:
     DBI,
     dplyr,
     DT,
-<<<<<<< HEAD
-    xtable
-Depends:
-    magrittr
-=======
     xtable,
     visNetwork
->>>>>>> master
 RoxygenNote: 6.0.1.9000
